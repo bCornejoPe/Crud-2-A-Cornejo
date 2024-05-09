@@ -36,6 +36,44 @@ class MainActivity : AppCompatActivity() {
 
         val btnAgregar = findViewById<Button>(R.id.btnAgregar)
 
+            fun Limpiar(){
+            txtNombre.setText("")
+                txtCantidad.setText("")
+                txtPrecio.setText("")
+        }
+        ///////////////////////////////////////////////////////////////////////Mostara////////////////////////////////////////////////////////////////////////
+        val rcvProductos = findViewById<RecyclerView>(R.id.rcvProductos)
+
+        //Asignar un layout al ReciclerView
+        rcvProductos.layoutManager= LinearLayoutManager(this)
+
+        //Funcion para obtener datos
+        fun obtenerDatos(): List<dataClassProductos>{
+            val objConexion = ClaseConexion().cadenaConexion()
+
+            val statement = objConexion?.createStatement()
+            val resulset = statement?.executeQuery("select * from tbProductos")!!
+            val productos = mutableListOf<dataClassProductos>()
+            while (resulset.next()){
+                val nombre= resulset.getString("nombreProducto")
+
+                val producto= dataClassProductos(nombre)
+                productos.add(producto)
+            }
+            return productos
+        }
+
+        //asignar un adaptador
+        CoroutineScope(Dispatchers.IO).launch {
+            val productosDB = obtenerDatos()
+            withContext(Dispatchers.Main){
+                val miAdapter = Adaptador(productosDB)
+                rcvProductos.adapter = miAdapter
+            }
+        }
+
+        //////////////////////////////TODO: GUARDAR DATOS///////////////////////////////////////////
+
         //2-Programar el boton
 
         btnAgregar.setOnClickListener {
@@ -51,38 +89,15 @@ class MainActivity : AppCompatActivity() {
                 addProducto.setInt(2,txtPrecio.text.toString().toInt())
                 addProducto.setInt(3,txtCantidad.text.toString().toInt())
                    addProducto.executeUpdate()
+
+                val nuevosProductos = obtenerDatos()
+                withContext(Dispatchers.Main){
+                    (rcvProductos.adapter as? Adaptador)?.actualizarLista(nuevosProductos)
+                }
             }
+            //Limpiar()
         }
 
-        ///////////////////////////////////////////////////////////////////////Mostara////////////////////////////////////////////////////////////////////////
-        val rcvProductos = findViewById<RecyclerView>(R.id.rcvProductos)
 
-        //Asignar un layout al ReciclerView
-        rcvProductos.layoutManager= LinearLayoutManager(this)
-
-        //Funcion para obtener datos
-         fun obtenerDatos(): List<dataClassProductos>{
-             val objConexion = ClaseConexion().cadenaConexion()
-
-            val statement = objConexion?.createStatement()
-            val resulset = statement?.executeQuery("select * from tbProductos")!!
-            val productos = mutableListOf<dataClassProductos>()
-            while (resulset.next()){
-                val nombre= resulset.getString("nombreProducto")
-
-                val producto= dataClassProductos(nombre)
-                productos.add(producto)
-            }
-            return productos
-         }
-
-        //asignar un adaptador
-        CoroutineScope(Dispatchers.IO).launch {
-            val productosDB = obtenerDatos()
-            withContext(Dispatchers.Main){
-                val miAdapter = Adaptador(productosDB)
-                rcvProductos.adapter = miAdapter
-            }
-        }
     }
 }
