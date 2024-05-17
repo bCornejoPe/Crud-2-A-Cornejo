@@ -1,6 +1,8 @@
 package RecyclerViewHelper
 
 import Bryan.Cornejo.crudcornejo2_a.R
+import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -48,13 +50,40 @@ class Adaptador(private var Datos: List<dataClassProductos>) : RecyclerView.Adap
 
 
     override fun getItemCount() = Datos.size
+    @SuppressLint("SuspiciousIndentation")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val producto = Datos[position]
         holder.textView.text = producto.nombreProductos
     val item = Datos[position]
         holder.imgBorrar.setOnClickListener {
-            eliminarRegistro(item.nombreProductos, position)
+
+            //Creamos un alerta
+            //Creamos el contexto
+            val context = holder.itemView.context
+
+            //Creo la alerta
+            val builder = AlertDialog.Builder(context)
+
+            //A mi alerta le pongo un titulo
+            builder.setTitle("¿Estas seguro?")
+
+            //Ponerle un mensaje
+            builder.setMessage("¿Desea eliminar el registro?")
+
+            //Paso final, agregamos los botones
+            builder.setPositiveButton("SI") { dialog, wich ->
+                eliminarRegistro(item.nombreProductos, position)
+            }
+
+            builder.setNegativeButton("No"){dialog, wich ->
+            }
+            //Creamos la alerta
+            val alertDialog = builder.create()
+            //Mostramos la alerta
+            alertDialog.show()
         }
+
+
 
     }
 }
