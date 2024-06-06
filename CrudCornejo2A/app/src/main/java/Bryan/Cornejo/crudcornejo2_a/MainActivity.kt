@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import modelo.ClaseConexion
 import modelo.dataClassProductos
+import java.util.UUID
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,9 +56,12 @@ class MainActivity : AppCompatActivity() {
             val resulset = statement?.executeQuery("select * from tbProductos")!!
             val productos = mutableListOf<dataClassProductos>()
             while (resulset.next()){
-                val nombre= resulset.getString("nombreProducto")
+                val uuid= resulset.getString("uuid")
 
-                val producto= dataClassProductos(nombre)
+                val nombre= resulset.getString("nombreProducto")
+                val precio = resulset.getInt("precio")
+                val cantidad = resulset.getInt("cantidad")
+                val producto= dataClassProductos(uuid, nombre, precio, cantidad)
                 productos.add(producto)
             }
             return productos
@@ -83,11 +87,11 @@ class MainActivity : AppCompatActivity() {
                 val claseConexion= ClaseConexion().cadenaConexion()
 
                 //2- Creo un variable que contenga un PreparedStatement
-                val addProducto = claseConexion?.prepareStatement("insert into tbProductos(nombreProducto, precio, cantidad) values (?, ?, ?)")!!
-
-                addProducto.setString(1,txtNombre.text.toString())
-                addProducto.setInt(2,txtPrecio.text.toString().toInt())
-                addProducto.setInt(3,txtCantidad.text.toString().toInt())
+                val addProducto = claseConexion?.prepareStatement("insert into tbProductos(uuid, nombreProducto, precio, cantidad) values (?, ?, ?, ?)")!!
+                addProducto.setString(1, UUID.randomUUID().toString())
+                addProducto.setString(2,txtNombre.text.toString())
+                addProducto.setInt(3,txtPrecio.text.toString().toInt())
+                addProducto.setInt(4,txtCantidad.text.toString().toInt())
                    addProducto.executeUpdate()
 
                 val nuevosProductos = obtenerDatos()
